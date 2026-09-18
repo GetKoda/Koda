@@ -2,6 +2,7 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import { useEditorStore } from '@/store';
 import { CanvasRenderer } from '@/renderer/canvas-renderer';
 import type { SceneNode } from '@shared/types';
+import { ContextMenu } from './ContextMenu';
 
 interface DragState {
   nodeId: string;
@@ -32,6 +33,7 @@ export function Canvas() {
   const [resizeState, setResizeState] = useState<ResizeState | null>(null);
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const {
     document, zoom, panX, panY, activeTool,
@@ -279,6 +281,132 @@ export function Canvas() {
     });
   }, [selectedIds, document, screenToWorld]);
 
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return;
+
+      // Delete
+      if (e.key === 'Delete' || e.key === 'Backspace') {
+        if (selectedIds.size > 0) {
+          for (const id of selectedIds) {
+            useEditorStore.getState().removeNode(id);
+          }
+        }
+      }
+
+      // Ctrl+D = Duplicate
+      if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        if (!document || selectedIds.size === 0) return;
+        const newIds: string[] = [];
+        for (const id of selectedIds) {
+          const node = findNode(document.root, id);
+          if (!node) continue;
+          const clone = JSON.parse(JSON.stringify(node));
+          clone.id = `node_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+          clone.name = `${node.name} Copy`;
+          clone.x += 20;
+          clone.y += 20;
+          useEditorStore.getState().addNode(node.parentId || document.root.id, clone);
+          newIds.push(clone.id);
+        }
+        useEditorStore.getState().selectMultiple(newIds);
+      }
+
+      // Ctrl+A = Select All
+      if ((e.ctrlKey || e.metaKey) && e.key === 'a') {
+        e.preventDefault();
+        if (!document) return;
+        const ids: string[] = [];
+        const walk = (n: SceneNode) => { ids.push(n.id); n.children.forEach(walk); };
+        walk(document.root);
+        useEditorStore.getState().selectMultiple(ids);
+      }
+
+      // H = Toggle visibility
+      if (e.key === 'h' && !e.ctrlKey && !e.metaKey && selectedIds.size === 1) {
+        const id = Array.from(selectedIds)[0];
+        const node = document ? findNode(document.root, id) : null;
+        if (node) useEditorStore.getState().updateNode(id, { visible: !node.visible });
+      }
+
+      // L = Toggle lock
+      if (e.key === 'l' && !e.ctrlKey && !e.metaKey && selectedIds.size === 1) {
+        const id = Array.from(selectedIds)[0];
+        const node = document ? findNode(document.root, id) : null;
+        if (node) useEditorStore.getState().updateNode(id, { locked: !node.locked });
+      }
+
+      // Ctrl+G = Group into frame
+      if ((e.ctrlKey || e.metaKey) && e.key === 'g') {
+        // Trigger grouping — same as context menu action
+        if (selectedIds.size > 1) {
+          const ids = Array.from(selectedIds);
+          const nodes = ids.map((id) => document ? findNode(document.root, id) : null).filter(Boolean);
+          if (nodes.length < 2 || !document) return;
+
+          const minX = Math.min(...nodes.map((n: any) => n.x));
+          const minY = Math.min(...nodes.map((n: any) => n.y));
+
+          const frameNode: SceneNode = {
+            id: `node_${Date.now()}`,
+            name: 'Group',
+            type: 'frame',
+            visible: true, locked: false, opacity: 1, blendMode: 'normal',
+            x: minX, y: minY, width: 200, height: 200, rotation: 0,
+            cornerRadius: { topLeft: 0, topRight: 0, bottomRight: 0, bottomLeft: 0 },
+            fills: [{ type: 'solid', visible: true, opacity: 0.05, color: { r: 255, g: 255, b: 255, a: 1 } }],
+            strokes: [{ visible: true, color: { r: 255, g: 255, b: 255, a: 1 }, width: 1, style: 'solid', align: 'inside' }],
+            effects: [],
+            layout: { mode: 'none', direction: 'column', wrap: 'nowrap', justifyContent: 'flex-start', alignItems: 'stretch', gap: 0, padding: { top: 0, right: 0, bottom: 0, left: 0 }, itemSpacing: 0 },
+            sizeConstraint: { widthSizing: 'fixed', heightSizing: 'fixed' },
+            constraints: { horizontal: 'left', vertical: 'top' },
+            children: [],
+            parentId: document.root.id,
+          };
+
+          const maxX = Math.max(...nodes.map((n: any) => n.x + n.width));
+          const maxY = Math.max(...nodes.map((n: any) => n.y + n.height));
+          frameNode.width = maxX - minX + 40;
+          frameNode.height = maxY - minY + 40;
+
+          let root = document.root;
+          for (const n of nodes) {
+            if (!n) continue;
+            const relNode = { ...n, x: n.x - minX, y: n.y - minY, parentId: frameNode.id };
+            frameNode.children.push(relNode as SceneNode);
+            const remove = (node: SceneNode): SceneNode => ({
+              ...node,
+              children: node.children.filter((c) => c.id !== n!.id).map(remove),
+            });
+            root = remove(root);
+          }
+
+          const addFrame = (n: SceneNode): SceneNode => {
+            if (n.id === root.id) return { ...n, children: [...n.children, frameNode] };
+            return { ...n, children: n.children.map(addFrame) };
+          };
+          root = addFrame(root);
+
+          useEditorStore.setState({
+            document: { ...document, root },
+            selectedIds: new Set([frameNode.id]),
+          });
+        }
+      }
+
+      // Escape = Clear selection
+      if (e.key === 'Escape') {
+        useEditorStore.getState().clearSelection();
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [selectedIds, document]);
+
   const cursorMap: Record<string, string> = {
     select: 'default',
     hand: 'grab',
@@ -307,7 +435,17 @@ export function Canvas() {
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onWheel={handleWheel}
-        onContextMenu={(e) => e.preventDefault()}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          // Right-click: if no node under cursor, select on hover first
+          if (activeTool === 'select') {
+            const hit = hitTest(e.clientX, e.clientY);
+            if (hit && !selectedIds.has(hit)) {
+              select(hit);
+            }
+          }
+          setContextMenu({ x: e.clientX, y: e.clientY });
+        }}
       />
 
       {/* Selection overlay — resize handles */}
@@ -352,6 +490,15 @@ export function Canvas() {
             );
           })}
         </div>
+      )}
+
+      {/* Context Menu */}
+      {contextMenu && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+        />
       )}
     </div>
   );

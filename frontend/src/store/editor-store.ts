@@ -5,7 +5,7 @@
 // ============================================================================
 
 import { create } from 'zustand';
-import type { SceneNode, KodaDocument, Point } from '@shared/types';
+import type { SceneNode, KodaDocument, Point, ComponentDefinition } from '@shared/types';
 
 // ── Tool Types ──────────────────────────────────────────────────────────────
 
@@ -74,6 +74,12 @@ export interface EditorState {
   removeNode: (id: string) => void;
   updateNode: (id: string, updates: Partial<SceneNode>) => void;
   moveNode: (id: string, parentId: string) => void;
+
+  // Component operations
+  createComponent: (name: string, nodeIds: string[]) => ComponentDefinition | null;
+  createInstance: (componentId: string, x: number, y: number) => SceneNode | null;
+  updateComponentProp: (componentId: string, propId: string, value: unknown) => void;
+  getComponentDef: (id: string) => ComponentDefinition | undefined;
 
   // Drawing
   startDrawing: (point: Point) => void;
@@ -268,6 +274,100 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     let updated = removeNodeFromTree(doc.root, id);
     updated = addToParent(updated, newParentId, node);
     set({ document: { ...doc, root: updated } });
+  },
+
+  // Component operations
+  createComponent: (name, nodeIds) => {
+    const doc = get().document;
+    if (!doc) return null;
+
+    // Find nodes
+    const nodes = nodeIds.map((id) => findNodeById(doc.root, id)).filter(Boolean);
+    if (nodes.length === 0) return null;
+
+    // Clone nodes as component master
+    const masterNode = JSON.parse(JSON.stringify(nodes[0]));
+    masterNode.id = `comp_${Date.now()}`;
+    masterNode.name = name;
+    masterNode.type = 'component';
+
+    const componentDef: ComponentDefinition = {
+      id: masterNode.id,
+      name,
+      masterNodeId: masterNode.id,
+      properties: [],
+      variantProperties: [],
+      variants: {},
+      variantNodes: {},
+    };
+
+    set({
+      document: {
+        ...doc,
+        componentDefs: [...(doc.componentDefs || []), componentDef],
+      },
+    });
+
+    return componentDef;
+  },
+
+  createInstance: (componentId, x, y) => {
+    const doc = get().document;
+    if (!doc) return null;
+
+    const def = (doc.componentDefs || []).find((d) => d.id === componentId);
+    if (!def) return null;
+
+    // Find master node
+    const findMaster = (n: SceneNode): SceneNode | null => {
+      if (n.id === def.masterNodeId) return n;
+      for (const c of n.children) {
+        const found = findMaster(c);
+        if (found) return found;
+      }
+      return null;
+    };
+
+    const master = findMaster(doc.root);
+    if (!master) return null;
+
+    const instance: SceneNode = {
+      ...JSON.parse(JSON.stringify(master)),
+      id: `inst_${Date.now()}`,
+      name: def.name,
+      type: 'instance',
+      x,
+      y,
+      componentId: def.id,
+      overrides: {},
+    };
+
+    return instance;
+  },
+
+  updateComponentProp: (componentId, propId, value) => {
+    const doc = get().document;
+    if (!doc) return;
+    set({
+      document: {
+        ...doc,
+        componentDefs: (doc.componentDefs || []).map((d) =>
+          d.id === componentId
+            ? {
+                ...d,
+                properties: d.properties.map((p) =>
+                  p.id === propId ? { ...p, defaultValue: value } : p
+                ),
+              }
+            : d
+        ),
+      },
+    });
+  },
+
+  getComponentDef: (id) => {
+    const doc = get().document;
+    return (doc?.componentDefs || []).find((d) => d.id === id);
   },
 
   // Drawing

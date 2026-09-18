@@ -7,3 +7,7 @@ export type {
   LayoutMode, FlexDirection, FlexWrap, JustifyContent, AlignItems, LayoutSizing,
   HorizontalConstraint, VerticalConstraint, EffectType,
 } from './scene-graph';
+export type {
+  ComponentPropType, ComponentProperty, ComponentVariantProperty,
+  ComponentDefinition,
+} from './scene-graph';

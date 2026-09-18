@@ -208,6 +208,48 @@ export interface SceneNode {
   parentId?: string;
 }
 
+// ── Component Properties & Variants ─────────────────────────────────────────
+
+export type ComponentPropType = 'string' | 'number' | 'boolean' | 'color' | 'enum' | 'instance';
+
+export interface ComponentProperty {
+  id: string;
+  name: string;
+  type: ComponentPropType;
+  defaultValue: unknown;
+  options?: string[];       // For enum type
+  boundField?: string;     // For text content binding
+}
+
+export interface ComponentVariantProperty {
+  id: string;
+  name: string;             // e.g. "Size", "State", "Color"
+  options: string[];        // e.g. ["Small", "Medium", "Large"]
+}
+
+export interface ComponentDefinition {
+  id: string;
+  name: string;
+  description?: string;
+  category?: string;        // e.g. "Button", "Input", "Card"
+  icon?: string;
+
+  // The main component node (the master definition)
+  masterNodeId: string;
+
+  // Properties that instances can override
+  properties: ComponentProperty[];
+
+  // Variant dimensions
+  variantProperties: ComponentVariantProperty[];
+
+  // Each variant combo maps to a different visual
+  variants: Record<string, string>;  // e.g. { "Size=Small,State=Hover": "node_123" }
+
+  // Binding between variant key and the node that represents it
+  variantNodes: Record<string, string>;  // variant key → node ID
+}
+
 // ── Document ────────────────────────────────────────────────────────────────
 
 export interface KodaDocument {
@@ -216,6 +258,7 @@ export interface KodaDocument {
   version: string;
   root: SceneNode;           // Canvas node containing all pages
   components: SceneNode[];   // Component definitions
+  componentDefs: ComponentDefinition[];  // Component metadata + variants
   createdAt: string;
   updatedAt: string;
 }
