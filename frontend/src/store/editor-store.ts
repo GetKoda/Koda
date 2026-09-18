@@ -36,6 +36,7 @@ export interface EditorState {
   zoom: number;
   panX: number;
   panY: number;
+  canvasColor: string;
 
   // UI
   showLayers: boolean;
@@ -68,6 +69,7 @@ export interface EditorState {
   // Viewport
   setZoom: (zoom: number) => void;
   setPan: (x: number, y: number) => void;
+  setCanvasColor: (color: string) => void;
   zoomToFit: () => void;
 
   // Node operations
@@ -187,6 +189,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   zoom: 1,
   panX: 0,
   panY: 0,
+  canvasColor: '#1a1a1a',
   showLayers: true,
   showProperties: true,
   showCodegen: false,
@@ -231,6 +234,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // Viewport
   setZoom: (zoom) => set({ zoom: Math.max(0.1, Math.min(10, zoom)) }),
   setPan: (x, y) => set({ panX: x, panY: y }),
+  setCanvasColor: (color) => set({ canvasColor: color }),
   zoomToFit: () => set({ zoom: 1, panX: 0, panY: 0 }),
 
   // Node operations

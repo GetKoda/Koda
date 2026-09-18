@@ -42,16 +42,16 @@ export class CanvasRenderer {
     this.viewport.panY = panY;
   }
 
-  render(nodes: SceneNode[]): void {
+  render(nodes: SceneNode[], canvasColor?: string): void {
     const ctx = this.ctx;
     const { width, height } = this.viewport;
 
-    // Read theme colors from CSS variables
+    // Use provided canvasColor or fallback to CSS variable
     const style = getComputedStyle(document.documentElement);
-    const canvasBg = style.getPropertyValue('--koda-canvas-bg').trim() || '#1a1a1a';
+    const canvasBg = canvasColor || style.getPropertyValue('--koda-canvas-bg').trim() || '#1a1a1a';
     const dotColor = style.getPropertyValue('--koda-dot').trim() || '#2a2a2a';
 
-    // Clear with theme background
+    // Clear with canvas background
     ctx.clearRect(0, 0, width, height);
     ctx.fillStyle = canvasBg;
     ctx.fillRect(0, 0, width, height);

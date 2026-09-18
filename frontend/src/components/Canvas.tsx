@@ -3,6 +3,7 @@ import { useEditorStore } from '@/store';
 import { CanvasRenderer } from '@/renderer/canvas-renderer';
 import type { SceneNode } from '@shared/types';
 import { ContextMenu } from './ContextMenu';
+import { CanvasBottomBar } from './CanvasBottomBar';
 
 interface DragState {
   nodeId: string;
@@ -36,7 +37,7 @@ export function Canvas() {
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
 
   const {
-    document, zoom, panX, panY, activeTool,
+    document, zoom, panX, panY, activeTool, canvasColor,
     isDrawing, drawStart, selectedIds,
     setZoom, setPan, startDrawing, stopDrawing,
     select, setHovered, addNode, clearSelection,
@@ -72,13 +73,13 @@ export function Canvas() {
     function renderFrame() {
       if (rendererRef.current && document) {
         rendererRef.current.setViewport(zoom, panX, panY);
-        rendererRef.current.render(document.root.children);
+        rendererRef.current.render(document.root.children, canvasColor);
       }
       animFrameRef.current = requestAnimationFrame(renderFrame);
     }
     animFrameRef.current = requestAnimationFrame(renderFrame);
     return () => cancelAnimationFrame(animFrameRef.current);
-  }, [document, zoom, panX, panY]);
+  }, [document, zoom, panX, panY, canvasColor]);
 
   // Screen to world coords
   const screenToWorld = useCallback((sx: number, sy: number) => {
@@ -426,7 +427,7 @@ export function Canvas() {
     : null;
 
   return (
-    <div ref={containerRef} className="flex-1 relative overflow-hidden" style={{ background: 'var(--koda-canvas-bg)' }}>
+    <div ref={containerRef} className="flex-1 relative overflow-hidden" style={{ background: canvasColor }}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0"
@@ -500,6 +501,9 @@ export function Canvas() {
           onClose={() => setContextMenu(null)}
         />
       )}
+
+      {/* Bottom floating toolbar */}
+      <CanvasBottomBar />
     </div>
   );
 }

@@ -8,12 +8,13 @@ import { InspectPanel } from './components/inspect/InspectPanel';
 import { CodegenPanel } from './components/codegen/CodegenPanel';
 import { ChatPanel } from './components/chat/ChatPanel';
 import { ComponentPanel } from './components/ComponentPanel';
+import { CanvasColorBar } from './components/CanvasColorBar';
 import { WelcomeScreen } from './components/WelcomeScreen';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useEditorStore } from './store';
 
 function Editor() {
-  const { document, setTool, showCodegen, showChat, showInspect } = useEditorStore();
+  const { document, setTool, showCodegen, showChat, showInspect, canvasColor, setCanvasColor } = useEditorStore();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -50,6 +51,10 @@ function Editor() {
   return (
     <div className="h-screen w-screen flex flex-col bg-koda-bg text-koda-text overflow-hidden select-none">
       <MenuBar />
+      {/* Canvas color bar */}
+      <div className="h-9 bg-koda-surface border-b border-koda-border flex items-center px-3">
+        <CanvasColorBar color={canvasColor} onChange={setCanvasColor} />
+      </div>
       <Toolbar />
       <div className="flex-1 flex overflow-hidden">
         <LayersPanel />
