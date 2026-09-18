@@ -2,6 +2,42 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Dark Theme (default for editor) ──────────────────────────────────── */
+:root {
+  --koda-bg: #0a0a0a;
+  --koda-surface: #141414;
+  --koda-panel: #1a1a1a;
+  --koda-border: #2a2a2a;
+  --koda-border-hover: #3a3a3a;
+  --koda-text: #fafafa;
+  --koda-text-secondary: #888888;
+  --koda-accent: #6366f1;
+  --koda-accent-hover: #818cf8;
+  --koda-success: #22c55e;
+  --koda-warning: #eab308;
+  --koda-error: #ef4444;
+  --koda-canvas-bg: #1a1a1a;
+  --koda-dot: #2a2a2a;
+}
+
+/* ── Light Theme ──────────────────────────────────────────────────────── */
+.theme-light {
+  --koda-bg: #f5f5f5;
+  --koda-surface: #ffffff;
+  --koda-panel: #ffffff;
+  --koda-border: #e5e5e5;
+  --koda-border-hover: #d4d4d4;
+  --koda-text: #171717;
+  --koda-text-secondary: #737373;
+  --koda-accent: #6366f1;
+  --koda-accent-hover: #4f46e5;
+  --koda-success: #16a34a;
+  --koda-warning: #ca8a04;
+  --koda-error: #dc2626;
+  --koda-canvas-bg: #e8e8e8;
+  --koda-dot: #d4d4d4;
+}
+
 @layer base {
   * {
     -webkit-font-smoothing: antialiased;
@@ -18,12 +54,12 @@
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #2a2a2a;
+    background: var(--koda-border);
     border-radius: 3px;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #3a3a3a;
+    background: var(--koda-border-hover);
   }
 
   input[type="number"]::-webkit-inner-spin-button,

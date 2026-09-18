@@ -46,9 +46,14 @@ export class CanvasRenderer {
     const ctx = this.ctx;
     const { width, height } = this.viewport;
 
-    // Clear with solid background
+    // Read theme colors from CSS variables
+    const style = getComputedStyle(document.documentElement);
+    const canvasBg = style.getPropertyValue('--koda-canvas-bg').trim() || '#1a1a1a';
+    const dotColor = style.getPropertyValue('--koda-dot').trim() || '#2a2a2a';
+
+    // Clear with theme background
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#1a1a1a';
+    ctx.fillStyle = canvasBg;
     ctx.fillRect(0, 0, width, height);
 
     // Apply viewport
@@ -58,7 +63,7 @@ export class CanvasRenderer {
 
     // Draw dot grid (only when zoomed in enough)
     if (this.viewport.zoom > 0.3) {
-      this.drawDotGrid();
+      this.drawDotGrid(dotColor);
     }
 
     // Render nodes
@@ -83,7 +88,7 @@ export class CanvasRenderer {
 
   // ── Private ─────────────────────────────────────────────────────────────
 
-  private drawDotGrid(): void {
+  private drawDotGrid(dotColor: string = '#2a2a2a'): void {
     const ctx = this.ctx;
     const spacing = 20;
     const dotSize = 1;
@@ -94,7 +99,7 @@ export class CanvasRenderer {
     const endX = startX + this.viewport.width / this.viewport.zoom + spacing * 2;
     const endY = startY + this.viewport.height / this.viewport.zoom + spacing * 2;
 
-    ctx.fillStyle = '#2a2a2a';
+    ctx.fillStyle = dotColor;
 
     for (let x = startX; x < endX; x += spacing) {
       for (let y = startY; y < endY; y += spacing) {

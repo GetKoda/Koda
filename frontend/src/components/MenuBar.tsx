@@ -1,15 +1,17 @@
 // ============================================================================
-// Menu Bar — File, Edit, View, Help + Editable Project Name
+// Menu Bar — File, Edit, View, Help + Editable Project Name + Theme Toggle
 // ============================================================================
 
 import { useState, useRef, useEffect } from 'react';
 import { useEditorStore } from '@/store';
+import { useTheme } from '@/contexts/ThemeContext';
 import {
   SaveIcon, FileIcon, DownloadIcon, UploadIcon, ShareIcon,
   UndoIcon, RedoIcon, CopyIcon, TrashIcon,
   ZoomInIcon, ZoomOutIcon, GridIcon, MaximizeIcon,
   LayersIcon, PropertiesIcon, CodeIcon, ChatIcon,
   SettingsIcon, HistoryIcon, SearchIcon,
+  SunIcon, MoonIcon,
 } from './icons';
 
 interface MenuItem {
@@ -33,17 +35,16 @@ export function MenuBar() {
   const menuRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const store = useEditorStore();
+  const { theme, toggleTheme } = useTheme();
 
   const projectName = store.document?.name || 'Untitled Project';
 
-  // Start editing
   const startEditing = () => {
     setEditValue(projectName);
     setIsEditingName(true);
     setTimeout(() => inputRef.current?.select(), 0);
   };
 
-  // Finish editing
   const finishEditing = () => {
     const trimmed = editValue.trim();
     if (trimmed && trimmed !== projectName) {
@@ -52,7 +53,6 @@ export function MenuBar() {
     setIsEditingName(false);
   };
 
-  // Focus input when editing starts
   useEffect(() => {
     if (isEditingName && inputRef.current) {
       inputRef.current.focus();
@@ -105,6 +105,12 @@ export function MenuBar() {
         { label: 'Toggle Properties', icon: <PropertiesIcon size={14} />, action: () => store.toggleProperties() },
         { label: 'Toggle Code Panel', icon: <CodeIcon size={14} />, action: () => store.toggleCodegen() },
         { label: 'Toggle Chat Panel', icon: <ChatIcon size={14} />, action: () => store.toggleChat() },
+        { divider: true, label: '' },
+        {
+          label: theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode',
+          icon: theme === 'dark' ? <SunIcon size={14} /> : <MoonIcon size={14} />,
+          action: toggleTheme,
+        },
       ],
     },
     {
@@ -119,7 +125,6 @@ export function MenuBar() {
     },
   ];
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
@@ -132,7 +137,6 @@ export function MenuBar() {
 
   return (
     <div ref={menuRef} className="h-8 bg-koda-surface border-b border-koda-border flex items-center px-2 relative z-50">
-      {/* Menu items */}
       {menus.map((menu) => (
         <div key={menu.label} className="relative">
           <button
@@ -183,7 +187,6 @@ export function MenuBar() {
         </div>
       ))}
 
-      {/* Spacer */}
       <div className="flex-1" />
 
       {/* Editable project name */}
@@ -212,6 +215,16 @@ export function MenuBar() {
           </button>
         )}
       </div>
+
+      {/* Theme toggle */}
+      <button
+        onClick={toggleTheme}
+        className="w-7 h-7 rounded-lg flex items-center justify-center text-koda-text-secondary
+                   hover:text-koda-text hover:bg-koda-border/50 transition-colors"
+        title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+      >
+        {theme === 'dark' ? <SunIcon size={14} /> : <MoonIcon size={14} />}
+      </button>
     </div>
   );
 }

@@ -426,7 +426,7 @@ export function Canvas() {
     : null;
 
   return (
-    <div ref={containerRef} className="flex-1 relative overflow-hidden" style={{ background: '#1a1a1a' }}>
+    <div ref={containerRef} className="flex-1 relative overflow-hidden" style={{ background: 'var(--koda-canvas-bg)' }}>
       <canvas
         ref={canvasRef}
         className="absolute inset-0"

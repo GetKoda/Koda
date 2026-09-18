@@ -1,22 +1,23 @@
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
         koda: {
-          bg: '#0a0a0a',
-          surface: '#141414',
-          panel: '#1a1a1a',
-          border: '#2a2a2a',
-          'border-hover': '#3a3a3a',
-          text: '#fafafa',
-          'text-secondary': '#888888',
-          accent: '#6366f1',
-          'accent-hover': '#818cf8',
-          success: '#22c55e',
-          warning: '#eab308',
-          error: '#ef4444',
+          bg: 'var(--koda-bg)',
+          surface: 'var(--koda-surface)',
+          panel: 'var(--koda-panel)',
+          border: 'var(--koda-border)',
+          'border-hover': 'var(--koda-border-hover)',
+          text: 'var(--koda-text)',
+          'text-secondary': 'var(--koda-text-secondary)',
+          accent: 'var(--koda-accent)',
+          'accent-hover': 'var(--koda-accent-hover)',
+          success: 'var(--koda-success)',
+          warning: 'var(--koda-warning)',
+          error: 'var(--koda-error)',
         },
       },
       fontFamily: {
