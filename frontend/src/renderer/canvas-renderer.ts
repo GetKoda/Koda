@@ -46,16 +46,20 @@ export class CanvasRenderer {
     const ctx = this.ctx;
     const { width, height } = this.viewport;
 
-    // Clear
+    // Clear with solid background
     ctx.clearRect(0, 0, width, height);
-
-    // Checkerboard background
-    this.drawCheckerboard();
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, width, height);
 
     // Apply viewport
     ctx.save();
     ctx.translate(this.viewport.panX, this.viewport.panY);
     ctx.scale(this.viewport.zoom, this.viewport.zoom);
+
+    // Draw dot grid (only when zoomed in enough)
+    if (this.viewport.zoom > 0.3) {
+      this.drawDotGrid();
+    }
 
     // Render nodes
     for (const node of nodes) {
@@ -79,16 +83,22 @@ export class CanvasRenderer {
 
   // ── Private ─────────────────────────────────────────────────────────────
 
-  private drawCheckerboard(): void {
+  private drawDotGrid(): void {
     const ctx = this.ctx;
-    const size = 20;
-    const cols = Math.ceil(this.viewport.width / size);
-    const rows = Math.ceil(this.viewport.height / size);
+    const spacing = 20;
+    const dotSize = 1;
 
-    for (let row = 0; row < rows; row++) {
-      for (let col = 0; col < cols; col++) {
-        ctx.fillStyle = (row + col) % 2 === 0 ? '#1e1e1e' : '#1a1a1a';
-        ctx.fillRect(col * size, row * size, size, size);
+    // Calculate visible area in world coords
+    const startX = Math.floor(-this.viewport.panX / this.viewport.zoom / spacing) * spacing;
+    const startY = Math.floor(-this.viewport.panY / this.viewport.zoom / spacing) * spacing;
+    const endX = startX + this.viewport.width / this.viewport.zoom + spacing * 2;
+    const endY = startY + this.viewport.height / this.viewport.zoom + spacing * 2;
+
+    ctx.fillStyle = '#2a2a2a';
+
+    for (let x = startX; x < endX; x += spacing) {
+      for (let y = startY; y < endY; y += spacing) {
+        ctx.fillRect(x - dotSize / 2, y - dotSize / 2, dotSize, dotSize);
       }
     }
   }

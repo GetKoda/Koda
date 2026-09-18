@@ -181,27 +181,9 @@ impl Renderer {
 impl Renderer {
     fn draw_checkerboard(&self) -> Result<(), JsValue> {
         let ctx = &self.ctx;
-        let size = 20.0;
+        // Solid background
         let _ = ctx.set_fill_style_str("#1a1a1a");
-
-        let cols = (self.viewport.width / size).ceil() as i32;
-        let rows = (self.viewport.height / size).ceil() as i32;
-
-        for row in 0..rows {
-            for col in 0..cols {
-                if (row + col) % 2 == 0 {
-                    let _ = ctx.set_fill_style_str("#1e1e1e");
-                } else {
-                    let _ = ctx.set_fill_style_str("#1a1a1a");
-                }
-                let _ = ctx.fill_rect(
-                    col as f64 * size,
-                    row as f64 * size,
-                    size,
-                    size,
-                );
-            }
-        }
+        let _ = ctx.fill_rect(0.0, 0.0, self.viewport.width, self.viewport.height);
         Ok(())
     }
 
