@@ -41,6 +41,8 @@ export interface EditorState {
   showLayers: boolean;
   showProperties: boolean;
   showCodegen: boolean;
+  showChat: boolean;
+  showInspect: boolean;
 
   // Drawing state (while actively drawing)
   isDrawing: boolean;
@@ -81,6 +83,8 @@ export interface EditorState {
   toggleLayers: () => void;
   toggleProperties: () => void;
   toggleCodegen: () => void;
+  toggleChat: () => void;
+  toggleInspect: () => void;
 }
 
 // ── Helpers ─────────────────────────────────────────────────────────────────
@@ -179,6 +183,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   showLayers: true,
   showProperties: true,
   showCodegen: false,
+  showChat: false,
+  showInspect: true,
   isDrawing: false,
   drawStart: null,
 
@@ -271,5 +277,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   // UI
   toggleLayers: () => set((s) => ({ showLayers: !s.showLayers })),
   toggleProperties: () => set((s) => ({ showProperties: !s.showProperties })),
-  toggleCodegen: () => set((s) => ({ showCodegen: !s.showCodegen })),
+  toggleCodegen: () => set((s) => ({ showCodegen: !s.showCodegen, showChat: false })),
+  toggleChat: () => set((s) => ({ showChat: !s.showChat, showCodegen: false })),
+  toggleInspect: () => set((s) => ({ showInspect: !s.showInspect })),
 }));

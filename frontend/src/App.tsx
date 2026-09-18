@@ -7,11 +7,14 @@ import { Canvas } from './components/Canvas';
 import { Toolbar } from './components/Toolbar';
 import { LayersPanel } from './components/LayersPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
+import { InspectPanel } from './components/inspect/InspectPanel';
+import { CodegenPanel } from './components/codegen/CodegenPanel';
+import { ChatPanel } from './components/chat/ChatPanel';
 import { useEditorStore, createDefaultNode } from './store';
 import type { KodaDocument } from '@shared/types';
 
 function App() {
-  const { document, setDocument, setTool } = useEditorStore();
+  const { document, setDocument, setTool, showCodegen, showChat, showInspect } = useEditorStore();
 
   // Create default document on mount
   useEffect(() => {
@@ -43,7 +46,6 @@ function App() {
   // Keyboard shortcuts
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
-      // Don't trigger shortcuts when typing in inputs
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
 
       switch (e.key.toLowerCase()) {
@@ -66,6 +68,13 @@ function App() {
           setTool('select');
           break;
         }
+        case 'e': {
+          if (e.ctrlKey || e.metaKey) {
+            e.preventDefault();
+            useEditorStore.getState().toggleCodegen();
+          }
+          break;
+        }
       }
     }
 
@@ -86,15 +95,24 @@ function App() {
         {/* Center: Canvas */}
         <Canvas />
 
-        {/* Right: Properties */}
-        <PropertiesPanel />
+        {/* Right: Properties or Inspect */}
+        {showInspect ? <InspectPanel /> : <PropertiesPanel />}
+
+        {/* Right side panel: Codegen or Chat */}
+        {showCodegen && <CodegenPanel />}
+        {showChat && <ChatPanel />}
       </div>
 
       {/* Bottom Status Bar */}
       <div className="h-6 bg-koda-surface border-t border-koda-border flex items-center px-3 text-2xs text-koda-text-secondary">
         <span>Koda Editor v0.1.0</span>
         <div className="flex-1" />
-        <span>{document ? `${document.root.children.length} page(s)` : 'No document'}</span>
+        {document && (
+          <div className="flex items-center gap-4">
+            <span>{document.root.children.length} page(s)</span>
+            <span>{document.components.length} component(s)</span>
+          </div>
+        )}
       </div>
     </div>
   );
