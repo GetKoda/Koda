@@ -52,6 +52,7 @@ export interface EditorState {
 
   // Document
   setDocument: (doc: KodaDocument) => void;
+  renameDocument: (name: string) => void;
   getNodeById: (id: string) => SceneNode | null;
 
   // Selection
@@ -196,6 +197,11 @@ export const useEditorStore = create<EditorState>((set, get) => ({
 
   // Document
   setDocument: (doc) => set({ document: doc }),
+  renameDocument: (name) => {
+    const doc = get().document;
+    if (!doc) return;
+    set({ document: { ...doc, name, updatedAt: new Date().toISOString() } });
+  },
 
   getNodeById: (id) => {
     const doc = get().document;

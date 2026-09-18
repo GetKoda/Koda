@@ -1,5 +1,5 @@
 // ============================================================================
-// Menu Bar — File, Edit, View, Help
+// Menu Bar — File, Edit, View, Help + Editable Project Name
 // ============================================================================
 
 import { useState, useRef, useEffect } from 'react';
@@ -28,15 +28,43 @@ interface MenuGroup {
 
 export function MenuBar() {
   const [openMenu, setOpenMenu] = useState<string | null>(null);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editValue, setEditValue] = useState('');
   const menuRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const store = useEditorStore();
+
+  const projectName = store.document?.name || 'Untitled Project';
+
+  // Start editing
+  const startEditing = () => {
+    setEditValue(projectName);
+    setIsEditingName(true);
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  // Finish editing
+  const finishEditing = () => {
+    const trimmed = editValue.trim();
+    if (trimmed && trimmed !== projectName) {
+      store.renameDocument(trimmed);
+    }
+    setIsEditingName(false);
+  };
+
+  // Focus input when editing starts
+  useEffect(() => {
+    if (isEditingName && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isEditingName]);
 
   const menus: MenuGroup[] = [
     {
       label: 'File',
       items: [
         { label: 'New Document', shortcut: 'Ctrl+N', icon: <FileIcon size={14} />, action: () => {} },
-        { label: 'Open...', shortcut: 'Ctrl+O', icon: <FolderIcon size={14} /> },
+        { label: 'Open...', shortcut: 'Ctrl+O' },
         { divider: true, label: '' },
         { label: 'Save', shortcut: 'Ctrl+S', icon: <SaveIcon size={14} /> },
         { label: 'Save As...', shortcut: 'Ctrl+Shift+S' },
@@ -104,6 +132,7 @@ export function MenuBar() {
 
   return (
     <div ref={menuRef} className="h-8 bg-koda-surface border-b border-koda-border flex items-center px-2 relative z-50">
+      {/* Menu items */}
       {menus.map((menu) => (
         <div key={menu.label} className="relative">
           <button
@@ -153,14 +182,36 @@ export function MenuBar() {
           )}
         </div>
       ))}
-    </div>
-  );
-}
 
-function FolderIcon({ size = 16 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
-      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
-    </svg>
+      {/* Spacer */}
+      <div className="flex-1" />
+
+      {/* Editable project name */}
+      <div className="absolute left-1/2 -translate-x-1/2">
+        {isEditingName ? (
+          <input
+            ref={inputRef}
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            onBlur={finishEditing}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') finishEditing();
+              if (e.key === 'Escape') setIsEditingName(false);
+            }}
+            className="bg-koda-bg border border-koda-accent rounded-md px-3 py-0.5 text-xs text-koda-text text-center
+                       focus:outline-none min-w-[180px]"
+          />
+        ) : (
+          <button
+            onClick={startEditing}
+            className="px-3 py-0.5 text-xs text-koda-text-secondary hover:text-koda-text rounded-md
+                       hover:bg-koda-border/50 transition-colors"
+          >
+            {projectName}
+          </button>
+        )}
+      </div>
+    </div>
   );
 }
