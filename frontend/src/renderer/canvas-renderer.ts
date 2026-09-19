@@ -42,14 +42,14 @@ export class CanvasRenderer {
     this.viewport.panY = panY;
   }
 
-  render(nodes: SceneNode[], canvasColor?: string): void {
+  render(nodes: SceneNode[], canvasColor?: string, dotColor?: string): void {
     const ctx = this.ctx;
     const { width, height } = this.viewport;
 
     // Use provided canvasColor or fallback to CSS variable
     const style = getComputedStyle(document.documentElement);
     const canvasBg = canvasColor || style.getPropertyValue('--koda-canvas-bg').trim() || '#1a1a1a';
-    const dotColor = style.getPropertyValue('--koda-dot').trim() || '#2a2a2a';
+    const dots = dotColor || style.getPropertyValue('--koda-dot').trim() || '#2a2a2a';
 
     // Clear with canvas background
     ctx.clearRect(0, 0, width, height);
@@ -63,7 +63,7 @@ export class CanvasRenderer {
 
     // Draw dot grid (only when zoomed in enough)
     if (this.viewport.zoom > 0.3) {
-      this.drawDotGrid(dotColor);
+      this.drawDotGrid(dots);
     }
 
     // Render nodes

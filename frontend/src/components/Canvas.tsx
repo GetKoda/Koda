@@ -5,6 +5,19 @@ import type { SceneNode } from '@shared/types';
 import { ContextMenu } from './ContextMenu';
 import { CanvasBottomBar } from './CanvasBottomBar';
 
+/** Compute a readable dot/grid color based on canvas background luminance. */
+function computeDotColor(bgHex: string): string {
+  let hex = bgHex.replace('#', '');
+  if (hex.length === 3) hex = hex.split('').map(c => c + c).join('');
+  const r = parseInt(hex.slice(0, 2), 16) / 255;
+  const g = parseInt(hex.slice(2, 4), 16) / 255;
+  const b = parseInt(hex.slice(4, 6), 16) / 255;
+  // sRGB luminance
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  // Return dark dots on light bg, light dots on dark bg
+  return lum > 0.5 ? '#c4c4c4' : '#3a3a3a';
+}
+
 interface DragState {
   nodeId: string;
   startX: number;
@@ -54,6 +67,19 @@ export function Canvas() {
     }
   }, []);
 
+  // Prevent browser ctrl+scroll from zooming the whole page
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = (e: WheelEvent) => {
+      if (e.ctrlKey || e.metaKey) {
+        e.preventDefault();
+      }
+    };
+    el.addEventListener('wheel', handler, { passive: false });
+    return () => el.removeEventListener('wheel', handler);
+  }, []);
+
   // Resize
   useEffect(() => {
     const container = containerRef.current;
@@ -70,10 +96,11 @@ export function Canvas() {
 
   // Render loop
   useEffect(() => {
+    const dotColor = computeDotColor(canvasColor);
     function renderFrame() {
       if (rendererRef.current && document) {
         rendererRef.current.setViewport(zoom, panX, panY);
-        rendererRef.current.render(document.root.children, canvasColor);
+        rendererRef.current.render(document.root.children, canvasColor, dotColor);
       }
       animFrameRef.current = requestAnimationFrame(renderFrame);
     }

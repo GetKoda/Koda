@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { Canvas } from './components/Canvas';
-import { Toolbar } from './components/Toolbar';
 import { MenuBar } from './components/MenuBar';
 import { LayersPanel } from './components/LayersPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
@@ -55,7 +54,6 @@ function Editor() {
       <div className="h-9 bg-koda-surface border-b border-koda-border flex items-center px-3">
         <CanvasColorBar color={canvasColor} onChange={setCanvasColor} />
       </div>
-      <Toolbar />
       <div className="flex-1 flex overflow-hidden">
         <LayersPanel />
         <Canvas />
