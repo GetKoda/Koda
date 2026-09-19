@@ -53,7 +53,7 @@ export function CodegenPanel() {
   if (!showCodegen) return null;
 
   return (
-    <div className="w-96 bg-koda-surface border-l border-koda-border flex flex-col overflow-hidden">
+    <div className="w-80 bg-koda-surface border-l border-koda-border flex flex-col overflow-hidden shrink-0">
       <div className="h-10 px-4 flex items-center justify-between border-b border-koda-border">
         <div className="flex items-center gap-2">
           <CodeIcon size={14} className="text-koda-accent" />

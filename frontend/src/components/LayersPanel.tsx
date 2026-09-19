@@ -2,6 +2,7 @@
 // Layers Panel — Node Tree View
 // ============================================================================
 
+import { useState } from 'react';
 import { useEditorStore } from '@/store';
 import type { SceneNode } from '@shared/types';
 import {
@@ -11,6 +12,7 @@ import {
   ComponentIcon, LayersIcon, LineIcon, PenIcon,
   PlusIcon,
 } from './icons';
+import { CanvasColorSidebar } from './CanvasColorSidebar';
 
 const nodeIcons: Record<string, React.ReactNode> = {
   canvas: <LayersIcon size={12} />,
@@ -107,15 +109,15 @@ function LayerItem({ node, depth }: { node: SceneNode; depth: number }) {
   );
 }
 
-export function LayersPanel() {
+export function LayersPanel({ canvasColor, onCanvasColorChange }: { canvasColor: string; onCanvasColorChange: (c: string) => void }) {
   const { document, showLayers } = useEditorStore();
 
   if (!showLayers || !document) return null;
 
   return (
-    <div className="w-56 bg-koda-surface border-r border-koda-border flex flex-col overflow-hidden">
+    <div className="flex-1 flex flex-col overflow-hidden min-w-0">
       {/* Header */}
-      <div className="h-10 flex items-center justify-between px-3 border-b border-koda-border">
+      <div className="h-10 flex items-center justify-between px-3 border-b border-koda-border shrink-0">
         <span className="text-xs font-semibold text-koda-text-secondary uppercase tracking-wider">
           Layers
         </span>
@@ -130,8 +132,11 @@ export function LayersPanel() {
           <LayerItem key={child.id} node={child} depth={0} />
         ))}
       </div>
+
+      {/* Canvas color picker */}
+      <div className="border-t border-koda-border p-2 shrink-0">
+        <CanvasColorSidebar color={canvasColor} onChange={onCanvasColorChange} />
+      </div>
     </div>
   );
 }
-
-import { useState } from 'react';

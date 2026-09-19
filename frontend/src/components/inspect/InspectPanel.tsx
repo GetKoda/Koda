@@ -66,7 +66,7 @@ export function InspectPanel() {
   if (!node) return null;
 
   return (
-    <div className="w-60 bg-koda-surface border-l border-koda-border flex flex-col overflow-hidden">
+    <div className="w-60 bg-koda-surface flex flex-col overflow-hidden min-w-0 shrink-0">
       <div className="px-3 py-2 border-b border-koda-border">
         <span className="text-xs font-medium text-koda-text-secondary uppercase tracking-wider">
           Inspect

@@ -92,8 +92,8 @@ export function PropertiesPanel() {
   const update = (updates: Partial<SceneNode>) => updateNode(node.id, updates);
 
   return (
-    <div className="w-60 bg-koda-surface border-l border-koda-border flex flex-col overflow-hidden">
-      <div className="h-10 flex items-center gap-2 px-3 border-b border-koda-border">
+    <div className="w-60 bg-koda-surface flex flex-col overflow-hidden min-w-0 shrink-0">
+      <div className="h-10 flex items-center gap-2 px-3 border-b border-koda-border shrink-0">
         <span className="text-koda-text-secondary">{nodeTypeIcons[node.type] || <RectangleIcon size={12} />}</span>
         <input
           type="text"

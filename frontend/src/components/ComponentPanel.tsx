@@ -50,7 +50,7 @@ export function ComponentPanel() {
   };
 
   return (
-    <div className="w-60 h-full bg-koda-surface border-l border-koda-border flex flex-col">
+    <div className="w-60 h-full bg-koda-surface border-l border-koda-border flex flex-col shrink-0">
       {/* Header */}
       <div className="h-10 border-b border-koda-border flex items-center justify-between px-3">
         <span className="text-xs font-semibold">Components</span>
