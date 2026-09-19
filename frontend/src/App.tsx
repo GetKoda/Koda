@@ -1,19 +1,19 @@
 import { useEffect } from 'react';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { Canvas } from './components/Canvas';
 import { MenuBar } from './components/MenuBar';
 import { LayersPanel } from './components/LayersPanel';
 import { PropertiesPanel } from './components/PropertiesPanel';
 import { InspectPanel } from './components/inspect/InspectPanel';
-import { CodegenPanel } from './components/codegen/CodegenPanel';
-import { ChatPanel } from './components/chat/ChatPanel';
-import { ComponentPanel } from './components/ComponentPanel';
-import { CanvasColorBar } from './components/CanvasColorBar';
+import { ResizablePanel } from './components/ResizablePanel';
 import { WelcomeScreen } from './components/WelcomeScreen';
+import { ProjectDashboard } from './components/ProjectDashboard';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { useEditorStore } from './store';
+import { saveProject, getProject } from './services/project-manager';
 
 function Editor() {
-  const { document, setTool, showCodegen, showChat, showInspect, canvasColor, setCanvasColor } = useEditorStore();
+  const { document, setTool, canvasColor, setCanvasColor, showInspect } = useEditorStore();
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -47,20 +47,25 @@ function Editor() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [setTool]);
 
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const doc = useEditorStore.getState().document;
+      if (doc) saveProject(doc);
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <div className="h-screen w-screen flex flex-col bg-koda-bg text-koda-text overflow-hidden select-none">
       <MenuBar />
-      {/* Canvas color bar */}
-      <div className="h-9 bg-koda-surface border-b border-koda-border flex items-center px-3">
-        <CanvasColorBar color={canvasColor} onChange={setCanvasColor} />
-      </div>
       <div className="flex-1 flex overflow-hidden">
-        <LayersPanel />
+        <ResizablePanel side="left" defaultSize={224} minSize={160} maxSize={400}>
+          <LayersPanel canvasColor={canvasColor} onCanvasColorChange={setCanvasColor} />
+        </ResizablePanel>
         <Canvas />
-        {showInspect ? <InspectPanel /> : <PropertiesPanel />}
-        {showCodegen && <CodegenPanel />}
-        {showChat && <ChatPanel />}
-        <ComponentPanel />
+        <ResizablePanel side="right" defaultSize={240} minSize={180} maxSize={400}>
+          {showInspect ? <InspectPanel /> : <PropertiesPanel />}
+        </ResizablePanel>
       </div>
       <div className="h-6 bg-koda-surface border-t border-koda-border flex items-center px-3 text-2xs text-koda-text-secondary">
         <span>Koda v0.1.0</span>
@@ -76,11 +81,25 @@ function Editor() {
   );
 }
 
-function App() {
-  const { document } = useEditorStore();
+function EditorPage() {
+  const { projectId } = useParams<{ projectId: string }>();
+  const { document, setDocument } = useEditorStore();
+
+  useEffect(() => {
+    if (projectId && !document) {
+      const doc = getProject(projectId);
+      if (doc) {
+        setDocument(doc);
+      }
+    }
+  }, [projectId, document, setDocument]);
 
   if (!document) {
-    return <WelcomeScreen />;
+    return (
+      <div className="h-screen w-screen flex items-center justify-center bg-koda-bg text-koda-text">
+        <div className="text-sm text-koda-text-secondary">Loading project...</div>
+      </div>
+    );
   }
 
   return (
@@ -90,4 +109,23 @@ function App() {
   );
 }
 
-export default App;
+function DashboardPage() {
+  return <ProjectDashboard />;
+}
+
+function LandingPage() {
+  return <WelcomeScreen />;
+}
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/editor/:projectId" element={<EditorPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
+}

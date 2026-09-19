@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useEditorStore, createDefaultNode } from '@/store';
-import type { KodaDocument } from '@shared/types';
+import { useNavigate } from 'react-router-dom';
 import {
   SparklesIcon, CodeIcon, ChatIcon, MagicIcon,
   PlusIcon, ChevronRightIcon,
@@ -138,26 +137,7 @@ function EditorPreview() {
 
 // ── Main Landing Page ────────────────────────────────────────────────────
 export function WelcomeScreen() {
-  const { setDocument } = useEditorStore();
-
-  const createBlankProject = () => {
-    const root = createDefaultNode('canvas', { name: 'Page 1', width: 10000, height: 10000 });
-    root.x = -5000;
-    root.y = -5000;
-
-    const doc: KodaDocument = {
-      id: `doc_${Date.now()}`,
-      name: 'Untitled Project',
-      version: '1.0',
-      root,
-      components: [],
-      componentDefs: [],
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-
-    setDocument(doc);
-  };
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white text-[#171717] overflow-x-hidden">
@@ -178,9 +158,9 @@ export function WelcomeScreen() {
           </nav>
           <div className="flex-1" />
           <div className="flex items-center gap-4">
-            <a href="#" className="text-sm text-[#737373] hover:text-[#171717] transition-colors hidden sm:block">Log in</a>
+            <a href="/dashboard" className="text-sm text-[#737373] hover:text-[#171717] transition-colors hidden sm:block">Log in</a>
             <button
-              onClick={createBlankProject}
+              onClick={() => navigate('/dashboard')}
               className="px-4 py-2 bg-[#171717] text-white text-sm font-medium rounded-lg hover:bg-[#404040] transition-colors"
             >
               Get Started
@@ -206,7 +186,7 @@ export function WelcomeScreen() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <button
-              onClick={createBlankProject}
+              onClick={() => navigate('/dashboard')}
               className="group flex items-center gap-2 px-7 py-3.5 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl font-medium text-sm shadow-xl shadow-[#6366f1]/25 transition-all hover:shadow-2xl hover:shadow-[#6366f1]/35"
             >
               <PlusIcon size={16} />
@@ -465,7 +445,7 @@ export function WelcomeScreen() {
             Free and open source. No credit card required. Start shipping beautiful UIs in minutes.
           </p>
           <button
-            onClick={createBlankProject}
+            onClick={() => navigate('/dashboard')}
             className="group inline-flex items-center gap-2 px-8 py-4 bg-[#6366f1] hover:bg-[#4f46e5] text-white rounded-xl font-medium text-base shadow-xl shadow-[#6366f1]/25 transition-all hover:shadow-2xl hover:shadow-[#6366f1]/35"
           >
             <PlusIcon size={18} />
