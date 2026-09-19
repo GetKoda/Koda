@@ -3,6 +3,7 @@
 // ============================================================================
 
 import { useState, useRef, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useEditorStore } from '@/store';
 import { useTheme } from '@/contexts/ThemeContext';
 import {
@@ -36,6 +37,7 @@ export function MenuBar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const store = useEditorStore();
   const { theme, toggleTheme } = useTheme();
+  const navigate = useNavigate();
 
   const projectName = store.document?.name || 'Untitled Project';
 
@@ -63,6 +65,14 @@ export function MenuBar() {
     {
       label: 'File',
       items: [
+        { label: 'Back to Projects', icon: <LayersIcon size={14} />, action: () => {
+          const doc = useEditorStore.getState().document;
+          if (doc) {
+            import('@/services/project-manager').then(({ saveProject }) => saveProject(doc));
+          }
+          navigate('/dashboard');
+        } },
+        { divider: true, label: '' },
         { label: 'New Document', shortcut: 'Ctrl+N', icon: <FileIcon size={14} />, action: () => {} },
         { label: 'Open...', shortcut: 'Ctrl+O' },
         { divider: true, label: '' },
