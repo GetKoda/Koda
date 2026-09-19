@@ -1,17 +1,14 @@
 import { useEditorStore } from '@/store';
-import { useTheme } from '@/contexts/ThemeContext';
 import {
   CursorIcon, FrameIcon, RectangleIcon, EllipseIcon,
   LineIcon, PenIcon, TextIcon, HandIcon,
   ZoomInIcon, ZoomOutIcon, MaximizeIcon,
-  SunIcon, MoonIcon,
 } from './icons';
 
 export function CanvasBottomBar() {
   const {
     activeTool, setTool, zoom, setZoom, setPan,
   } = useEditorStore();
-  const { theme, toggleTheme } = useTheme();
 
   const tools = [
     { id: 'select', icon: <CursorIcon size={15} />, label: 'Select (V)' },
@@ -83,15 +80,6 @@ export function CanvasBottomBar() {
         title="Fit to Screen"
       >
         <MaximizeIcon size={13} />
-      </button>
-
-      {/* Theme toggle */}
-      <button
-        onClick={toggleTheme}
-        className="w-7 h-7 rounded-lg flex items-center justify-center text-koda-text-secondary hover:bg-koda-border hover:text-koda-text transition-colors"
-        title={theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-      >
-        {theme === 'dark' ? <SunIcon size={13} /> : <MoonIcon size={13} />}
       </button>
     </div>
   );
